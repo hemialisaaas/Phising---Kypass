@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Password Self-Service — Awareness Demo</title>
+<style>
+  :root{
+    --bg:#e4e5e6; --navy:#3d4a54; --navy-dark:#333f48; --green:#8bc53f;
+    --gold:#d9a441; --teal:#33c6b0; --cyan:#3fc1e0; --line:#c9cacb;
+    --text-muted:#8a8f93; --danger:#c91f2b; --warning:#ffd431;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);min-height:100vh;color:#333;}
+  .app{width:100%;min-height:100vh;background:var(--bg);position:relative;}
+  .topbar{background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;font-size:15px;}
+  .topbar .side{min-width:70px;display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--green);font-weight:500;user-select:none;}
+  .topbar .side.right{justify-content:flex-end;}
+  .topbar .title{font-weight:500;}
+  .topbar svg{display:block;}
+  .menu-screen{padding:40px 30px;}
+  .menu-logo{display:flex;align-items:center;justify-content:center;margin-bottom:24px;}
+  .menu-logo img{display:block;object-fit:contain;}
+  .menu-hr{border:none;border-top:1px solid #bdbfc1;margin:0 0 40px;}
+  .menu-btn{display:flex;align-items:center;gap:18px;background:var(--navy);color:#fff;padding:20px 24px;margin-bottom:8px;font-size:16px;cursor:pointer;border:none;width:100%;text-align:left;transition:background .15s ease;}
+  .menu-btn:hover{background:var(--navy-dark);}
+  .menu-btn.disabled{cursor:not-allowed;opacity:.55;}
+  .menu-btn.disabled:hover{background:var(--navy);}
+  .menu-btn .icon{width:22px;height:22px;flex-shrink:0;}
+  .menu-footer{display:flex;align-items:center;justify-content:space-between;margin-top:30px;}
+  .enroll-link{color:#4a90d9;font-size:14px;}
+  .login-btn{background:var(--green);color:#fff;border:none;padding:10px 24px;font-size:15px;cursor:pointer;border-radius:1px;}
+  .login-btn:hover{filter:brightness(.95);}
+  .form-screen{padding:30px;}
+  .form-instructions{color:#4a5a63;font-size:14px;margin-bottom:14px;}
+  .field{background:#fff;border:1px solid var(--line);margin-bottom:6px;}
+  .field input{width:100%;border:none;outline:none;padding:14px 16px;font-size:15px;background:transparent;color:#4a5a63;}
+  .field.select{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;color:#b9bcbe;font-size:15px;cursor:default;margin-top:14px;}
+  .hint{font-size:12px;color:var(--text-muted);margin:0 0 4px 2px;}
+  .icon-key path,.icon-key circle{stroke:var(--gold);}
+  .icon-lock path,.icon-lock rect{stroke:var(--teal);}
+  .icon-kbd path,.icon-kbd rect{stroke:var(--cyan);}
+  [hidden]{display:none!important;}
+
+  /* Danger overlay shown after Next/Login */
+  .danger-overlay{position:fixed;inset:0;z-index:9999;display:none;place-items:center;overflow:hidden;background:rgba(42,0,3,.86);cursor:not-allowed;}
+  .danger-overlay.show{display:grid;}
+  .danger-card{position:relative;z-index:2;text-align:center;color:#fff;padding:30px;pointer-events:none;}
+  .danger-symbol{width:190px;height:190px;margin:0 auto 18px;display:grid;place-items:center;border:8px solid var(--warning);border-radius:50%;background:#fff;color:var(--danger);font-size:126px;line-height:1;box-shadow:0 0 0 12px rgba(255,212,49,.17),0 0 55px rgba(255,212,49,.72);animation:pulse .55s infinite alternate;}
+  .danger-title{margin:0;font-size:clamp(28px,5vw,52px);font-weight:900;letter-spacing:1px;}
+  .danger-subtitle{margin:10px 0 0;font-size:clamp(14px,2vw,20px);font-weight:650;}
+  .floating-danger{position:absolute;display:grid;place-items:center;border:3px solid var(--warning);border-radius:50%;background:#fff;color:var(--danger);box-shadow:0 0 20px rgba(255,212,49,.65);animation:pulse .5s infinite alternate;pointer-events:none;}
+  .danger-close{position:fixed;top:18px;right:18px;z-index:3;width:48px;height:48px;border:2px solid #fff;border-radius:50%;background:#171717;color:#fff;font-size:30px;line-height:1;cursor:pointer;}
+  @keyframes pulse{from{transform:scale(.92);filter:brightness(.9)}to{transform:scale(1.07);filter:brightness(1.12)}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <section id="screen-menu" class="menu-screen">
+    <div class="menu-logo">
+      <img src="Logo Metra.png" alt="Menu Logo" width="130" height="50">
+    </div>
+    <hr class="menu-hr">
+
+    <button class="menu-btn" type="button" onclick="showScreen('verify')">
+      <svg class="icon icon-key" viewBox="0 0 24 24" fill="none" stroke-width="1.6"><circle cx="8" cy="15" r="3.2"/><path d="M10.3 12.7 19 4l2 2-2 2 1.5 1.5L18 12l-2-2-3.2 3.2"/></svg>
+      <span>Password Reset</span>
+    </button>
+    <button class="menu-btn disabled" type="button" disabled title="Not available in this prototype">
+      <svg class="icon icon-lock" viewBox="0 0 24 24" fill="none" stroke-width="1.6"><rect x="6" y="11" width="12" height="9" rx="1.5"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg>
+      <span>Account Unlock</span>
+    </button>
+    <button class="menu-btn" type="button" onclick="showScreen('login')">
+      <svg class="icon icon-kbd" viewBox="0 0 24 24" fill="none" stroke-width="1.6"><rect x="4" y="7" width="16" height="10" rx="1.5"/><path d="M7 10.2h.01M10 10.2h.01M13 10.2h.01M16 10.2h.01M7 13.5h10"/></svg>
+      <span>Change Password</span>
+    </button>
+    <div class="menu-footer">
+      <span class="enroll-link">Login to enroll for password self-service</span>
+      <button class="login-btn" type="button" onclick="showScreen('login')">Login</button>
+    </div>
+  </section>
+
+  <section id="screen-verify" class="form-screen" hidden>
+    <div class="topbar">
+      <span class="side" onclick="showScreen('menu')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9h12v-9"/></svg>
+      </span>
+      <span class="title">User Verification</span>
+      <span class="side right" onclick="showDanger()">Next</span>
+    </div>
+    <div style="padding:26px 4px 4px;">
+      <div class="field"><input type="text" placeholder="Username" autocomplete="off"></div>
+      <div class="hint">(Example : Jsmith)</div>
+      <div class="field select"><span>METRA</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b9bcbe" stroke-width="2"><path d="M5 8l7 7 7-7"/></svg></div>
+    </div>
+  </section>
+
+  <section id="screen-login" class="form-screen" hidden>
+    <div class="topbar">
+      <span class="side" onclick="showScreen('menu')">&lsaquo; Back</span>
+      <span class="title">Login</span>
+      <span class="side right" onclick="showDanger()">Login</span>
+    </div>
+    <div style="padding:26px 4px 4px;">
+      <div class="form-instructions">Enter User Name for Login</div>
+      <div class="field"><input type="text" placeholder="Username" autocomplete="off"></div>
+      <div class="field select" style="margin-top:14px;"><span>METRA</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b9bcbe" stroke-width="2"><path d="M5 8l7 7 7-7"/></svg></div>
+    </div>
+  </section>
+</div>
+
+<section id="danger-overlay" class="danger-overlay" role="dialog" aria-modal="true" aria-label="Peringatan simulasi phishing">
+  <button class="danger-close" type="button" onclick="closeDanger()" aria-label="Tutup">×</button>
+  <div id="danger-field"></div>
+  <div class="danger-card">
+    <div class="danger-symbol" aria-hidden="true">⚠</div>
+  </div>
+</section>
+
+<script>
+  let dangerTimer = null;
+
+  function showScreen(name){
+    ['menu','verify','login'].forEach(function(id){
+      document.getElementById('screen-'+id).hidden = (id !== name);
+    });
+  }
+
+  function addDangerLogo(){
+    const field = document.getElementById('danger-field');
+    const existing = field.querySelectorAll('.floating-danger');
+    if(existing.length >= 70){
+      const logo = existing[Math.floor(Math.random()*existing.length)];
+      logo.style.left = Math.floor(Math.random()*92)+'%';
+      logo.style.top = Math.floor(Math.random()*88)+'%';
+      return;
+    }
+    const logo = document.createElement('div');
+    const size = 45 + Math.floor(Math.random()*70);
+    logo.className = 'floating-danger';
+    logo.textContent = '⚠';
+    logo.style.width = size+'px';
+    logo.style.height = size+'px';
+    logo.style.fontSize = Math.floor(size*.6)+'px';
+    logo.style.left = Math.floor(Math.random()*92)+'%';
+    logo.style.top = Math.floor(Math.random()*88)+'%';
+    field.appendChild(logo);
+  }
+
+  function showDanger(){
+    document.querySelectorAll('input').forEach(function(input){ input.value=''; });
+    document.getElementById('app').inert = true;
+    document.getElementById('danger-overlay').classList.add('show');
+    clearInterval(dangerTimer);
+    for(let i=0;i<8;i++) addDangerLogo();
+    dangerTimer = setInterval(addDangerLogo,120);
+  }
+
+  function closeDanger(){
+    clearInterval(dangerTimer);
+    dangerTimer = null;
+    document.getElementById('danger-overlay').classList.remove('show');
+    document.getElementById('danger-field').innerHTML='';
+    document.getElementById('app').inert = false;
+    showScreen('menu');
+  }
+</script>
+</body>
+</html>
