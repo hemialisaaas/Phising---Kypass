@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Password Self-Service — Prototype (Demo, non-functional)</title>
+<style>
+  :root{
+    --bg:#e4e5e6;
+    --navy:#3d4a54;
+    --navy-dark:#333f48;
+    --green:#8bc53f;
+    --gold:#d9a441;
+    --teal:#33c6b0;
+    --cyan:#3fc1e0;
+    --line:#c9cacb;
+    --text-muted:#8a8f93;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    background:var(--bg);
+    min-height:100vh;
+    color:#333;
+  }
+  .demo-banner{
+    background:#fff8e1;
+    color:#7a5b00;
+    font-size:13px;
+    text-align:center;
+    padding:8px 12px;
+    border-bottom:1px solid #e9d9a0;
+  }
+  .app{
+    width:100%;
+    min-height:calc(100vh - 34px);
+    background:var(--bg);
+    position:relative;
+  }
+
+  /* ---------- Top bar (verification / login screens) ---------- */
+  .topbar{
+    background:var(--navy);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 20px;
+    font-size:15px;
+  }
+  .topbar .side{
+    min-width:70px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    cursor:pointer;
+    color:var(--green);
+    font-weight:500;
+    user-select:none;
+  }
+  .topbar .side.right{justify-content:flex-end;}
+  .topbar .title{font-weight:500;}
+  .topbar svg{display:block;}
+
+  /* ---------- Menu screen ---------- */
+  .menu-screen{padding:40px 30px;}
+  .menu-logo{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:24px;
+  }
+  .menu-logo svg{display:block;}
+  .menu-hr{border:none;border-top:1px solid #bdbfc1;margin:0 0 40px 0;}
+  .menu-btn{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    background:var(--navy);
+    color:#fff;
+    padding:20px 24px;
+    margin-bottom:8px;
+    font-size:16px;
+    cursor:pointer;
+    border:none;
+    width:100%;
+    text-align:left;
+    transition:background .15s ease;
+  }
+  .menu-btn:hover{background:var(--navy-dark);}
+  .menu-btn.disabled{
+    cursor:not-allowed;
+    opacity:.55;
+  }
+  .menu-btn.disabled:hover{background:var(--navy);}
+  .menu-btn .icon{width:22px;height:22px;flex-shrink:0;}
+  .menu-footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:30px;
+  }
+  .enroll-link{color:#4a90d9;font-size:14px;}
+  .login-btn{
+    background:var(--green);
+    color:#fff;
+    border:none;
+    padding:10px 24px;
+    font-size:15px;
+    cursor:pointer;
+    border-radius:1px;
+  }
+  .login-btn:hover{filter:brightness(0.95);}
+
+  /* ---------- Verification / Login form screens ---------- */
+  .form-screen{padding:30px;}
+  .form-instructions{
+    color:#4a5a63;
+    font-size:14px;
+    margin-bottom:14px;
+  }
+  .field{
+    background:#fff;
+    border:1px solid var(--line);
+    margin-bottom:6px;
+  }
+  .field input{
+    width:100%;
+    border:none;
+    outline:none;
+    padding:14px 16px;
+    font-size:15px;
+    background:transparent;
+    color:#4a5a63;
+  }
+  .field.select{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 16px;
+    color:#b9bcbe;
+    font-size:15px;
+    cursor:default;
+    margin-top:14px;
+  }
+  .hint{
+    font-size:12px;
+    color:var(--text-muted);
+    margin:0 0 4px 2px;
+  }
+  .note{
+    margin-top:18px;
+    font-size:13px;
+    color:#7a5b00;
+    background:#fff8e1;
+    border:1px solid #e9d9a0;
+    padding:10px 14px;
+    display:none;
+  }
+  .note.show{display:block;}
+
+  .icon-key path,.icon-key circle{stroke:var(--gold);}
+  .icon-lock path,.icon-lock rect{stroke:var(--teal);}
+  .icon-kbd path,.icon-kbd rect{stroke:var(--cyan);}
+
+  [hidden]{display:none !important;}
+</style>
+</head>
+<body>
+
+
+<div class="app">
+
+  <!-- ============ SCREEN 1: MENU ============ -->
+  <section id="screen-menu" class="menu-screen">
+    <div class="menu-logo">
+      <img
+        src="Logo Metra.png"
+        alt="Menu Logo"
+        width="130"
+        height="50"
+      >
+    </div>
+    <hr class="menu-hr">
+
+    <button class="menu-btn" onclick="showScreen('verify')">
+      <svg class="icon icon-key" viewBox="0 0 24 24" fill="none" stroke-width="1.6"><circle cx="8" cy="15" r="3.2"/><path d="M10.3 12.7 19 4l2 2-2 2 1.5 1.5L18 12l-2-2-3.2 3.2"/></svg>
+      <span>Password Reset</span>
+    </button>
+
+    <button class="menu-btn disabled" title="Not available in this prototype">
+      <svg class="icon icon-lock" viewBox="0 0 24 24" fill="none" stroke-width="1.6"><rect x="6" y="11" width="12" height="9" rx="1.5"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg>
+      <span>Account Unlock</span>
+    </button>
+
+    <button class="menu-btn" onclick="showScreen('login')">
+      <svg class="icon icon-kbd" viewBox="0 0 24 24" fill="none" stroke-width="1.6"><rect x="4" y="7" width="16" height="10" rx="1.5"/><path d="M7 10.2h.01M10 10.2h.01M13 10.2h.01M16 10.2h.01M7 13.5h10"/></svg>
+      <span>Change Password</span>
+    </button>
+
+    <div class="menu-footer">
+      <span class="enroll-link">Login to enroll for password self-service</span>
+      <button class="login-btn" onclick="showScreen('login')">Login</button>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 2: USER VERIFICATION (Password Reset) ============ -->
+  <section id="screen-verify" class="form-screen" hidden>
+    <div class="topbar">
+      <span class="side" onclick="showScreen('menu')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9h12v-9"/></svg>
+      </span>
+      <span class="title">User Verification</span>
+      <span class="side right" onclick="showNote('verify')">Next</span>
+    </div>
+    <div style="padding:26px 4px 4px;">
+      <div class="field"><input type="text" placeholder="Username"></div>
+      <div class="hint">(Example : Jsmith)</div>
+      <div class="field select">
+        <span>METRA</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b9bcbe" stroke-width="2"><path d="M5 8l7 7 7-7"/></svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 3: LOGIN (Change Password) ============ -->
+  <section id="screen-login" class="form-screen" hidden>
+    <div class="topbar">
+      <span class="side" onclick="showScreen('menu')">&lsaquo; Back</span>
+      <span class="title">Login</span>
+      <span class="side right" onclick="showNote('login')">Login</span>
+    </div>
+    <div style="padding:26px 4px 4px;">
+      <div class="form-instructions">Enter User Name for Login</div>
+      <div class="field"><input type="text" placeholder="Username"></div>
+      <div class="field select" style="margin-top:14px;">
+        <span>METRA</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b9bcbe" stroke-width="2"><path d="M5 8l7 7 7-7"/></svg>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  function showScreen(name){
+    ['menu','verify','login'].forEach(function(id){
+      document.getElementById('screen-'+id).hidden = (id !== name);
+    });
+  }
+  function showNote(name){
+    var note = document.getElementById('note-'+name);
+    note.classList.add('show');
+  }
+</script>
+
+</body>
+</html>
